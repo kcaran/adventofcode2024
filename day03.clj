@@ -6,7 +6,7 @@
 )
 
 (defn parta [code]
-  (println "KAC" code "\n")
+;  (println "KAC" code "\n")
   (reduce +
     (map
       (fn [n] (* (read-string (n 1)) (read-string (n 2))))
@@ -15,15 +15,16 @@
   )
 )
 
-;; In clojure, the sm flags are at the beginning of the regex
+; In clojure, the sm flags are at the beginning of the regex
+; I edited the re-seq to use a vector
 (defn partb [code]
-  (let [codeseq (re-seq #"(?sm)(?:(.*?)(?:(do(?:n't)?\(\))|\z))" code)]
+  (let [codeseq (vec (re-seq #"(?sm)(?:(.*?)(?:(do(?:n't)?\(\))|\z))" code))]
   (reduce +
-    (parta (((vec codeseq) 0) 1))
+    (parta ((codeseq 0) 1))
     (map
       (fn [n]
-        (if (not= (((vec codeseq) n) 2) "don't()")
-              (parta (((vec codeseq) (+ n 1)) 1)) 0)
+        (if (not= ((codeseq n) 2) "don't()")
+              (parta ((codeseq (+ n 1)) 1)) 0)
       )
       (range (- (count codeseq) 1))
     )
