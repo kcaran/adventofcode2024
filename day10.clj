@@ -82,6 +82,24 @@
   )
 )
 
+(defn traverseb [lmap start]
+  (loop [moves [ start ] visited [] ]
+    ; If there are no moves left
+    (if (nil? moves)
+      visited
+      (let [pos (first moves)]
+        (if (or true (nil? (visited (visit pos))))
+          (recur
+            (into (next moves) (remove nil? (map (fn [m] ((move m) lmap pos)) (range 4))))
+            (if (= (get-in lmap pos) 9) (conj visited (visit pos)) visited)
+          )
+          (recur (next moves) visited)
+        )
+      )
+    )
+  )
+)
+
 (defn theads [lmap]
   (into #{}
     (for [y (range (count lmap))
@@ -92,9 +110,9 @@
   )
 )
 
-(defn trailhead [lmap]
+(defn trailhead [lmap trav]
   (reduce +
-    (map (fn [h] (let [tops (traverse lmap h)] (println h tops) (count tops))) (theads lmap))
+    (map (fn [h] (let [tops (trav lmap h)] (println h tops) (count tops))) (theads lmap))
   )
 )
 
@@ -106,7 +124,8 @@
 
 (defn -main [& args]
   (let [lmap (parse (myutils/read-input (first args)))]
-    (println "The trailhead score is " (trailhead lmap))
+    (println "The trailhead score is " (trailhead lmap traverse))
+    (println "The trailhead score for part b is " (trailhead lmap traverseb))
   )
 )
 
