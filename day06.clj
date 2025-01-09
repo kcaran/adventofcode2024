@@ -79,7 +79,7 @@
     (if (nil? pos)
       visited
       (do
-        (println pos)
+;       (println pos)
         (recur ((move (pos 2)) lmap pos) (conj visited (visit pos)))
       )
     )
@@ -109,7 +109,7 @@
 (defn partb [lmap y x]
   (if (= (get-in lmap [y x]) ".")
     (do
-      (println y x)
+;     (println y x)
       (traverseb (assoc-in lmap [y x] "#") )
     )
     0
@@ -142,5 +142,7 @@
 )
 
 ;; Call the main function
-(apply -main *command-line-args*)
+(when-not (empty? *command-line-args*)
+  (apply -main *command-line-args*)
+)
 
