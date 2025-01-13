@@ -1,7 +1,9 @@
 #!/usr/bin/env -S clojure -M
 ;
-; Had an off-by-one error in calculating the middle of the grid, since everything
-; is zero-based. 
+; Part a: Had an off-by-one error in calculating the middle of the grid,
+; since everything is zero-based.
+;
+; Part b: Piped output to less and searched for a row of 10 asterisks
 ;
 
 (ns day14
@@ -9,9 +11,9 @@
 (:require [myutils :refer [read-input]])
 )
 
-(defn move [lmap pt]
+(defn move [lmap pt times]
   (let [py ((pt 0) 0) px ((pt 0) 1) vy ((pt 1) 0) vx ((pt 1) 1) maxy ((lmap 1) 0) maxx ((lmap 1) 1)]
-    [ [ (mod (+ py vy) maxy ) (mod (+ px vx) maxx ) ] [ vy vx ] ]
+    [ [ (mod (+ py (* times vy)) maxy ) (mod (+ px (* times vx)) maxx ) ] [ vy vx ] ]
   )
 )
 
@@ -28,18 +30,29 @@
   )
 )
 
-(defn go [lmap m]
-  (map (fn [p] (loop [cnt 0 pt p] (if (= cnt m) pt (recur (inc cnt) (move lmap pt))))) (lmap 0))
+(defn go [lmap times]
+   (map (fn [p] (move lmap p times)) (lmap 0))
 )
 
-(defn safety [lmap]
-  (let [moved (go lmap 100)]
+(defn safety [lmap run]
+  (let [moved (go lmap run)]
     (reduce (fn [m pt]
        (let [s (score pt (lmap 1))]
           (if (> s 0) (update m s (fnil inc 0)) m)
         ))
        {}
     moved))
+)
+
+(defn prmap [lmap]
+  (let [mp (vec (repeat ((lmap 1) 0) (vec (repeat ((lmap 1) 1) '.))))]
+    (run! (fn [l] (println l))
+      (reduce (fn [mpp pt] (assoc-in mpp pt '*))
+        mp
+        (map (fn [p] (p 0)) (lmap 0))
+      )
+    )
+  )
 )
 
 (defn parse [str]
@@ -57,9 +70,18 @@
 )
 
 (defn -main [& args]
-  (let [lmap (parse (myutils/read-input (first args)))]
-(println (lmap 1))
-    (println "The safety score is " (reduce * (vals (safety lmap))))
+  (let [lmap (parse (myutils/read-input (first args)))
+     safe (reduce * (vals (safety lmap 100))) ]
+    (println "The safety score is " safe)
+    (loop [mp lmap cnt 0]
+      (do
+        (println "\nThe count is" cnt)
+        (prmap mp)
+      )
+      (if (<= cnt (* ((lmap 1) 0) ((lmap 1) 1)))
+        (recur [(vec (go mp 1)) (lmap 1)] (inc cnt))
+      )
+    )
   )
 )
 
